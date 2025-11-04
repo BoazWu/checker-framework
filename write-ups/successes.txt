@@ -1,0 +1,12 @@
+1. Used other Reasoning LLM to verify implementation.
+
+In order to confirm the changes that were being made, I also asked Claude to generate a summary of the code changes that it made,
+and I gave this summary to Gemini 2.5 Pro to check if it was being reasonable. I used the external LLM to generate prompts
+that would be sent to the Kiro built-in LLM, and I found this to be more effective in terms of passing the given test file
+without making uneccessary changes.
+
+2. Clear communication of requirements
+
+By making it very clear what it's goal was and also providing the test file which needed to work properly,
+the LLM was able to much better understand what it's task was and make fewer unnecessary changes. To be even more clear,
+I specified what the result of the test should be, since it was misunderstanding and changing the test to fit its understanding.

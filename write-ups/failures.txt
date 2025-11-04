@@ -1,0 +1,12 @@
+1. Was changing the provided test case according it its interpretation
+
+Initially, I gave Kiro the details of the issue on GitHub and also the test that it needed to pass and let it run free.
+After some amount of time, it said that it had completed the task, but upon inspection it had changed the given test file.
+Specifically, I noticed that it was also making some of the allowed uses forbidden, and treated them as errors.
+so I had to give it more guidance for it to get back on track.
+
+2. It began to deviate from the task and make changes that were uneccessary and unrelated.
+After I gave the initial prompt, Kiro made code changes to far too many files, and was doing a lot of work that
+was unrelated to the task that it was given. It began to get very diffiicult to keep track of all of the different
+areas that it was changing, so I had to tell it to try to make the minimal code changes needed and to get rid of any
+narrow the focus.
