@@ -6,6 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.Serializable;
@@ -16,6 +17,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signedness.qual.BitPattern;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
@@ -59,6 +61,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @Unsigned annotation. */
   private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+
+  /** The @BitPattern annotation. */
+  protected final AnnotationMirror BIT_PATTERN =
+      AnnotationBuilder.fromClass(elements, BitPattern.class);
 
   /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
   private final AnnotationMirror SIGNEDNESS_GLB =
@@ -306,6 +312,17 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
           break;
+        case AND:
+        case OR:
+        case XOR:
+          // For bitwise operations, if either operand is BitPattern, result should be BitPattern
+          AnnotatedTypeMirror leftType = getAnnotatedType(tree.getLeftOperand());
+          AnnotatedTypeMirror rightType = getAnnotatedType(tree.getRightOperand());
+          if (leftType.hasPrimaryAnnotation(BIT_PATTERN)
+              || rightType.hasPrimaryAnnotation(BIT_PATTERN)) {
+            type.replaceAnnotation(BIT_PATTERN);
+          }
+          break;
         default:
           // Do nothing
       }
@@ -317,6 +334,18 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (TreeUtils.isStringCompoundConcatenation(tree)) {
         if (TypesUtils.isCharOrCharacter(TreeUtils.typeOf(tree.getExpression()))) {
           type.replaceAnnotation(SIGNED);
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror type) {
+      if (tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
+        // For bitwise NOT operation, if operand is BitPattern, result should be BitPattern
+        AnnotatedTypeMirror operandType = getAnnotatedType(tree.getExpression());
+        if (operandType.hasPrimaryAnnotation(BIT_PATTERN)) {
+          type.replaceAnnotation(BIT_PATTERN);
         }
       }
       return null;
